@@ -28,6 +28,7 @@ var chainid int64
 var file string
 var gasprice int64
 var gaslimit int64
+var chunksize int
 var gasmultiplier float64
 var multideposit string
 var multiDepositAddress common.Address
@@ -46,6 +47,7 @@ func init() {
 	flag.Int64Var(&gaslimit, "gas-limit", 0, "Gas limit")
 	flag.Float64Var(&gasmultiplier, "gas-multiplier", 0, "Gas multiplier")
 	flag.StringVar(&multideposit, "multi-deposit", "", "MultiDeposit address")
+	flag.IntVar(&chunksize, "chunk-size", 0, "Chunk size")
 	flag.Parse()
 
 	if pk == "" {
@@ -66,6 +68,10 @@ func init() {
 
 	if multideposit == "" {
 		log.Fatal("multi-deposit is required")
+	}
+
+	if chunksize == 0 {
+		chunksize = 100
 	}
 }
 
@@ -140,11 +146,11 @@ func main() {
 
 	var chunks [][]DepositData
 
-	if len(content) > 500 {
-		log.Println("File contains more than 500 elements, splitting ...")
+	if len(content) > chunksize {
+		log.Printf("File contains more than %v elements, splitting ...", chunksize)
 
-		for i := 0; i < len(fileContents); i += 500 {
-			end := i + 500
+		for i := 0; i < len(fileContents); i += chunksize {
+			end := i + chunksize
 
 			if end > len(fileContents) {
 				end = len(fileContents)
